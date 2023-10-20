@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Todo List</title>
+    <style>
+      body {
+        background-color: #f5f5f5;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        padding: 50px;
+      }
+
+      /* Centered container */
+      .container {
+        max-width: 600px;
+        width: 100%;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        background-color: #fff;
+        padding: 20px;
+      }
+
+      /* Style the list items */
+      .task {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 5px 0;
+        background-color: #fffaf0;
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+      }
+
+      /* Style the checkbox */
+      .task input[type="checkbox"] {
+        margin-right: 10px;
+      }
+
+      /* Style the delete button */
+      .task .delete {
+        background-color: #ff6666;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        cursor: pointer;
+      }
+
+      /* Style the input field and button */
+      .input-container {
+        display: flex;
+        align-items: center;
+      }
+
+      #taskInput {
+        flex: 1;
+        padding: 10px;
+      }
+
+      #addButton {
+        padding: 10px 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Todo List</h1>
+      <div class="input-container">
+        <input type="text" id="taskInput" placeholder="Add a new task" />
+        <button id="addButton">Add</button>
+      </div>
+      <div id="taskList"></div>
+    </div>
+
+    <script>
+      const addButton = document.getElementById("addButton");
+      const taskInput = document.getElementById("taskInput");
+      const taskList = document.getElementById("taskList");
+
+      function saveTasks() {
+        const tasks = [];
+        document.querySelectorAll(".task").forEach((taskDiv) => {
+          const checkbox = taskDiv.querySelector('input[type="checkbox"]');
+          const label = taskDiv.querySelector("span");
+          const isImportant = taskDiv.style.backgroundColor === "yellow";
+          tasks.push({
+            text: label.textContent,
+            checked: checkbox.checked,
+            important: isImportant,
+          });
+        });
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+      }
+
+      function loadTasks() {
+        const tasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+        tasks.forEach((task) => {
+          addTask(task.text, task.checked, task.important);
+        });
+      }
+
+      function addTask(taskText, isChecked = false, isImportant = false) {
+        if (typeof taskText === "undefined" || taskText.trim() === "") {
+          alert("WRITE SMTH!");
+          return;
+        }
+
+        const taskDiv = document.createElement("div");
+        taskDiv.classList.add("task");
+        if (isImportant) {
+          taskDiv.style.backgroundColor = "yellow";
+        }
+
+        const taskContentDiv = document.createElement("div");
+        const taskCheckbox = document.createElement("input");
+        taskCheckbox.type = "checkbox";
+        taskCheckbox.checked = isChecked;
+        const taskLabel = document.createElement("span");
+        taskLabel.textContent = taskText;
+
+        if (isChecked) {
+          taskLabel.style.textDecoration = "line-through";
+        }
+
+        taskCheckbox.addEventListener("change", function () {
+          if (taskCheckbox.checked) {
+            taskLabel.style.textDecoration = "line-through";
+          } else {
+            taskLabel.style.textDecoration = "none";
+          }
+          saveTasks();
+        });
+
+        taskContentDiv.appendChild(taskCheckbox);
+        taskContentDiv.appendChild(taskLabel);
+        taskDiv.appendChild(taskContentDiv);
+
+        const buttonGroup = document.createElement("div");
+
+        const importantButton = document.createElement("button");
+        importantButton.textContent = "!";
+        importantButton.style.marginRight = "5px";
+        importantButton.addEventListener("click", function () {
+          if (taskDiv.style.backgroundColor !== "yellow") {
+            taskDiv.style.backgroundColor = "yellow";
+          } else {
+            taskDiv.style.backgroundColor = "#fffaf0";
+          }
+          saveTasks();
+        });
+
+        buttonGroup.appendChild(importantButton);
+
+        const deleteButton = document.createElement("button");
+        deleteButton.classList.add("delete");
+        deleteButton.textContent = "x";
+        deleteButton.addEventListener("click", function () {
+          taskList.removeChild(taskDiv);
+          saveTasks();
+        });
+
+        buttonGroup.appendChild(deleteButton);
+        taskList.appendChild(taskDiv);
+        taskDiv.appendChild(buttonGroup);
+
+        saveTasks();
+      }
+
+      addButton.addEventListener("click", function () {
+        addTask(taskInput.value);
+        taskInput.value = "";
+      });
+
+      taskInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          addTask(taskInput.value);
+          taskInput.value = "";
+        }
+      });
+
+      loadTasks();
+    </script>
+  </body>
+</html>
